@@ -1,19 +1,28 @@
 import { db } from "@/lib/db/client";
 import { clubs, leads, ads } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import Link from "next/link";
 import ClubEditDialog from "@/app/components/ClubEditDialog";
 import type { ClubRecord } from "@/app/components/ClubEditDialog";
 import LeadsTableClient from "@/app/components/LeadsTableClient";
+import LeadsStatusTabs from "@/app/components/LeadsStatusTabs";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
+type SearchParams = Promise<{ status?: "sent" | "unsent" }>;
+
 export default async function SiteClubDetailPage({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: SearchParams;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const statusParam = (sp?.status === "sent" ? "sent" : "unsent") as
+    | "sent"
+    | "unsent";
   const [club] = await db
     .select({
       id: clubs.id,
@@ -52,7 +61,9 @@ export default async function SiteClubDetailPage({
     })
     .from(leads)
     .leftJoin(ads, eq(leads.adId, ads.id))
-    .where(eq(leads.clubId, club.id))
+    .where(
+      and(eq(leads.clubId, club.id), eq(leads.sent, statusParam === "sent"))
+    )
     .orderBy(desc(leads.createdAt))
     .limit(200);
 
@@ -112,8 +123,9 @@ export default async function SiteClubDetailPage({
         </div>
       </div>
 
-      <div>
-        <h2 className="mb-2 text-xl font-semibold">Leads</h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Leads</h2>
+        <LeadsStatusTabs value={statusParam} />
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

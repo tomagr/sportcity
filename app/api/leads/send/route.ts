@@ -45,9 +45,14 @@ export async function POST(req: NextRequest) {
       .from(leads)
       .leftJoin(clubs, eq(leads.clubId, clubs.id));
 
-    const rows = "all" in parsed && parsed.all
-      ? await baseQuery
-      : await baseQuery.where(inArray(leads.id, parsed.ids));
+    let rows;
+    if ("all" in parsed && parsed.all) {
+      rows = await baseQuery;
+    } else if ("ids" in parsed) {
+      rows = await baseQuery.where(inArray(leads.id, parsed.ids));
+    } else {
+      rows = [] as Awaited<typeof baseQuery>;
+    }
 
     // Group by clubId (including null) since destination email depends on club
     const clubIdToLeads = new Map<string, typeof rows>();

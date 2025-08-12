@@ -1,15 +1,27 @@
 import { db } from "@/lib/db/client";
 import { ads, leads, clubs } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import Link from "next/link";
 import AdEditDialog from "@/app/components/AdEditDialog";
 import type { AdRecord } from "@/app/components/AdEditDialog";
 import LeadsTableClient from "@/app/components/LeadsTableClient";
+import LeadsStatusTabs from "@/app/components/LeadsStatusTabs";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
+type SearchParams = Promise<{ status?: "sent" | "unsent" }>;
 
-export default async function SiteAdDetailPage({ params }: { params: Params }) {
+export default async function SiteAdDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
+  const statusParam = (sp?.status === "sent" ? "sent" : "unsent") as
+    | "sent"
+    | "unsent";
   const [ad] = await db
     .select({
       id: ads.id,
@@ -52,7 +64,7 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
     })
     .from(leads)
     .leftJoin(clubs, eq(leads.clubId, clubs.id))
-    .where(eq(leads.adId, ad.id))
+    .where(and(eq(leads.adId, ad.id), eq(leads.sent, statusParam === "sent")))
     .orderBy(desc(leads.createdAt))
     .limit(200);
 
@@ -107,8 +119,9 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
         </div>
       </div>
 
-      <div>
-        <h2 className="mb-2 text-xl font-semibold">Leads</h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Leads</h2>
+        <LeadsStatusTabs value={statusParam} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
