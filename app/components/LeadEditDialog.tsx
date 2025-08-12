@@ -49,7 +49,11 @@ export default function LeadEditDialog({ lead }: { lead: LeadRow }) {
         if (!cancelled) {
           setClubs(
             Array.isArray(data?.clubs)
-              ? data.clubs.filter((c: any) => c?.id && c?.name)
+              ? (data.clubs as unknown[]).filter(
+                  (c): c is ClubOption =>
+                    typeof (c as ClubOption)?.id === "string" &&
+                    typeof (c as ClubOption)?.name === "string"
+                )
               : []
           );
         }

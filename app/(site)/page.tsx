@@ -1,4 +1,3 @@
-import UploadLeadsDialogClient from "@/app/components/UploadLeadsDialogClient";
 import { verifySessionFromCookiesOnly } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db/client";
@@ -99,7 +98,6 @@ export default async function Home({
       <div className="mx-auto max-w-8xl px-4 mt-10 space-y-8">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-semibold mb-4">Upload Leads CSV</h1>
-          <UploadLeadsDialogClient />
         </div>
 
         <div>

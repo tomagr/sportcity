@@ -3,6 +3,7 @@ import { clubs, leads, ads } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import ClubEditDialog from "@/app/components/ClubEditDialog";
+import type { ClubRecord } from "@/app/components/ClubEditDialog";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -94,7 +95,7 @@ export default async function SiteClubDetailPage({
           <p className="text-muted-foreground">Club detail</p>
         </div>
         {/* Inline CRUD edit dialog for club */}
-        <ClubEditDialog club={club as unknown as any} />
+        <ClubEditDialog club={club as ClubRecord} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

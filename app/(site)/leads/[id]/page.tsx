@@ -3,6 +3,7 @@ import { leads, ads, clubs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
 import LeadEditDialog from "@/app/components/LeadEditDialog";
+import type { LeadRow } from "@/app/components/LeadsTableClient";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -44,12 +45,12 @@ export default async function SiteLeadDetailPage({
     );
   }
 
-  const leadForEdit = {
+  const leadForEdit: LeadRow = {
     ...row,
     createdTime: row.createdTime
       ? new Date(row.createdTime as unknown as string).toISOString()
       : null,
-  } as unknown as any;
+  };
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">

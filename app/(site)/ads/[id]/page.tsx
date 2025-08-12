@@ -3,6 +3,7 @@ import { ads, leads, clubs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import AdEditDialog from "@/app/components/AdEditDialog";
+import type { AdRecord } from "@/app/components/AdEditDialog";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -64,7 +65,7 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
           <p className="text-muted-foreground">Ad detail</p>
         </div>
         {/* Inline CRUD edit dialog */}
-        <AdEditDialog ad={ad as unknown as any} />
+        <AdEditDialog ad={ad as AdRecord} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
