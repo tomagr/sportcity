@@ -75,7 +75,7 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : ""}
         </div>
@@ -134,16 +134,13 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 <td className="px-3 py-2">{r.email}</td>
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
-                <td className="px-3 py-2 capitalize">
+                <td className="px-3 py-2">
                   {r.clubId ? (
-                    <Link
-                      href={`/clubs/${r.clubId}`}
-                      className="text-primary hover:underline"
-                    >
+                    <Link href={`/clubs/${r.clubId}`} className="badge">
                       {r.clubOfInterest}
                     </Link>
                   ) : (
-                    r.clubOfInterest
+                    <span className="badge">{r.clubOfInterest}</span>
                   )}
                 </td>
                 <td className="px-3 py-2">
@@ -153,10 +150,7 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 </td>
                 <td className="px-3 py-2">
                   {r.campaignName ? (
-                    <Link
-                      href={`/ads/${r.adId}`}
-                      className="text-primary hover:underline"
-                    >
+                    <Link href={`/ads/${r.adId}`} className="badge">
                       {r.campaignName}
                     </Link>
                   ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { normalizeNameKey } from "@/lib/name";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function LeadsClubFilter({
@@ -14,7 +15,12 @@ export default function LeadsClubFilter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const selected = useMemo(() => new Set(selectedClubs), [selectedClubs]);
+  const selected = useMemo(() => {
+    const normalized = selectedClubs.map((c) =>
+      normalizeNameKey(c.replace(/_/g, " "))
+    );
+    return new Set(normalized);
+  }, [selectedClubs]);
 
   function toggleClub(club: string) {
     const next = new URLSearchParams(searchParams?.toString() ?? "");
@@ -23,9 +29,12 @@ export default function LeadsClubFilter({
       .flatMap((v) => String(v).split(","))
       .map((v) => v.trim())
       .filter(Boolean);
-    const set = new Set(current);
-    if (set.has(club)) set.delete(club);
-    else set.add(club);
+    const set = new Set(
+      current.map((c) => normalizeNameKey(c.replace(/_/g, " ")))
+    );
+    const clubKey = normalizeNameKey(club);
+    if (set.has(clubKey)) set.delete(clubKey);
+    else set.add(clubKey);
     next.delete("club");
     if (set.size > 0) {
       // store as comma-separated single param for readability
@@ -39,7 +48,7 @@ export default function LeadsClubFilter({
   return (
     <div className="flex flex-wrap gap-2">
       {allClubs.map((club) => {
-        const isActive = selected.has(club);
+        const isActive = selected.has(normalizeNameKey(club));
         return (
           <button
             key={club}

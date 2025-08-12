@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { ads, leads, clubs } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { normalizeNameKey, toDisplayName } from '@/lib/name';
 
 // Normalize CSV header keys: lowercased, trimmed, spaces/accents replaced, punctuation removed
 function normalizeKey(key: string): string {
@@ -91,23 +92,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     // Build a normalized club name cache to avoid duplicate creations during import
-    const normalizeClubKey = (name: string): string =>
-      name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/\p{Diacritic}/gu, '')
-        .replace(/[^a-z0-9]+/g, ' ')
-        .trim()
-        .replace(/\s+/g, ' ');
-
-    const toDisplayClubName = (name: string): string => {
-      const trimmed = name.trim().replace(/\s+/g, ' ');
-      return trimmed
-        .toLocaleLowerCase()
-        .split(' ')
-        .map((w) => (w ? w[0].toLocaleUpperCase() + w.slice(1) : w))
-        .join(' ');
-    };
+    const normalizeClubKey = (name: string): string => normalizeNameKey(name.replace(/_/g, ' '));
 
     const existingClubs = await db.select({ id: clubs.id, name: clubs.name }).from(clubs);
     const clubKeyToId = new Map<string, string>();
@@ -201,7 +186,7 @@ export async function POST(req: NextRequest) {
         if (cached) {
           clubId = cached;
         } else {
-          const displayName = toDisplayClubName(rawClubName);
+          const displayName = toDisplayName(rawClubName);
           const insertedClub = await db
             .insert(clubs)
             .values({ name: displayName })

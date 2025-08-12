@@ -30,7 +30,8 @@ export default function UploadLeadsDialog() {
       try {
         setIsUploading(true);
         setProgress(5);
-        const importId = `${Date.now()}-${Math.random()
+        const startedAt = new Date();
+        const importId = `${startedAt.getTime()}-${Math.random()
           .toString(36)
           .slice(2, 8)}`;
 
@@ -38,16 +39,38 @@ export default function UploadLeadsDialog() {
         form.append("file", file);
         form.append("importId", importId);
 
-        // Simulate progressive progress while the server processes the file
-        interval = window.setInterval(() => {
-          setProgress((p) => {
-            if (stop) return p;
-            const target = 99; // visually continue towards completion
-            const delta = Math.max(1, Math.round((target - p) / 12));
-            const next = p + delta;
-            return Math.min(next, target);
-          });
-        }, 250);
+        // Calculate total rows client-side by reading the CSV quickly (approximate)
+        let totalRows = 0;
+        try {
+          const text = await file.text();
+          totalRows =
+            text.split(/\r?\n/).filter((l) => l.trim().length > 0).length - 1;
+          if (totalRows < 1) totalRows = 1;
+        } catch {
+          totalRows = 100; // fallback to avoid divide by zero
+        }
+
+        // Poll server for created count and convert to percent
+        const poll = async () => {
+          try {
+            const url = new URL("/api/import/status", window.location.origin);
+            url.searchParams.set("importId", importId);
+            url.searchParams.set("startedAt", startedAt.toISOString());
+            const r = await fetch(url.toString(), { credentials: "include" });
+            if (!r.ok) return;
+            const d = (await r.json()) as { created?: number };
+            const created = typeof d.created === "number" ? d.created : 0;
+            const percent = Math.max(
+              5,
+              Math.min(99, Math.round((created / totalRows) * 100))
+            );
+            setProgress((prev) => (stop ? prev : percent));
+          } catch {
+            // ignore transient errors
+          }
+        };
+        await poll();
+        interval = window.setInterval(poll, 600);
 
         // Safety fallback: after 10s, assume success and reload the page
         fallbackTimeout = window.setTimeout(() => {
@@ -78,11 +101,14 @@ export default function UploadLeadsDialog() {
 
         stop = true;
         if (!res.ok) throw new Error("Import failed");
-        const data = await res.json().catch(() => ({}));
-        const created =
-          data && typeof data.created === "number" ? data.created : 0;
-        const updated =
-          data && typeof data.updated === "number" ? data.updated : 0;
+        const data: unknown = await res.json().catch(() => ({}));
+        let created = 0;
+        let updated = 0;
+        if (data && typeof data === "object") {
+          const record = data as Record<string, unknown>;
+          if (typeof record.created === "number") created = record.created;
+          if (typeof record.updated === "number") updated = record.updated;
+        }
         setProgress(100);
         toast(`Imported ${created} created, ${updated} updated`);
 

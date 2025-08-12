@@ -55,6 +55,7 @@ export default function NavbarClient({
           role="menu"
           className="absolute right-0 z-50 mt-2 min-w-[160px] rounded-lg border border-border bg-background shadow-lg"
         >
+          {/* Non-admin quick links moved to top navbar */}
           <Link
             href="/profile"
             className="block w-full rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"

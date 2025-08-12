@@ -2,6 +2,7 @@ import { db } from "@/lib/db/client";
 import { leads, ads, clubs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import LeadsClubFilter from "@/app/components/LeadsClubFilter";
+import { normalizeNameKey } from "@/lib/name";
 import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -15,7 +16,8 @@ export default async function LeadsPage({
   const importId =
     typeof params.importId === "string" ? params.importId : undefined;
   const clubParam = params.club;
-  const selectedClubs: string[] = Array.isArray(clubParam)
+  // Normalize selected clubs for comparison (spaces vs underscores etc.)
+  const selectedClubsRaw: string[] = Array.isArray(clubParam)
     ? clubParam
         .flatMap((v) => String(v).split(","))
         .map((v) => v.trim())
@@ -26,6 +28,10 @@ export default async function LeadsPage({
         .map((v) => v.trim())
         .filter(Boolean)
     : [];
+  const selectedClubsNormalized = selectedClubsRaw.map((c) =>
+    normalizeNameKey(c.replace(/_/g, " "))
+  );
+  const selectedClubsSet = new Set(selectedClubsNormalized);
   const success = params.success === "1";
   const created =
     typeof params.created === "string" ? params.created : undefined;
@@ -57,10 +63,12 @@ export default async function LeadsPage({
     : baseQuery);
 
   const filteredRows =
-    selectedClubs.length > 0
-      ? rows.filter(
-          (r) => r.clubOfInterest && selectedClubs.includes(r.clubOfInterest)
-        )
+    selectedClubsSet.size > 0
+      ? rows.filter((r) => {
+          if (!r.clubOfInterest) return false;
+          const key = normalizeNameKey(r.clubOfInterest);
+          return selectedClubsSet.has(key);
+        })
       : rows;
 
   // distinct clubs for filter buttons (respect current import filter)
@@ -91,7 +99,10 @@ export default async function LeadsPage({
         </div>
       )}
       <div className="mb-4">
-        <LeadsClubFilter allClubs={allClubs} selectedClubs={selectedClubs} />
+        <LeadsClubFilter
+          allClubs={allClubs}
+          selectedClubs={selectedClubsNormalized}
+        />
       </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="min-w-full text-sm">
@@ -115,7 +126,13 @@ export default async function LeadsPage({
                 <td className="px-3 py-2">{r.email}</td>
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
-                <td className="px-3 py-2 capitalize">{r.clubOfInterest}</td>
+                <td className="px-3 py-2">
+                  {r.clubOfInterest ? (
+                    <span className="badge">{r.clubOfInterest}</span>
+                  ) : (
+                    ""
+                  )}
+                </td>
                 <td className="px-3 py-2">
                   {r.createdTime
                     ? new Date(r.createdTime).toLocaleString()
