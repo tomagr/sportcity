@@ -45,7 +45,7 @@ export const ads = pgTable(
 );
 
 export const adsRelations = relations(ads, ({ many }) => ({
-  leads: many(() => leads),
+  leads: many(leads),
 }));
 
 // Leads table
@@ -82,7 +82,7 @@ export const leads = pgTable(
 );
 
 export const leadsRelations = relations(leads, ({ one }) => ({
-  ad: one(() => ads, {
+  ad: one(ads, {
     fields: [leads.adId],
     references: [ads.id],
   }),
