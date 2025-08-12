@@ -107,7 +107,7 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 />
               </th>
               <th className="px-3 py-2 text-left">Name</th>
-              <th className="px-3 py-2 text-left">Email</th>
+              <th className="px-3 py-2 text-left w-[280px]">Email</th>
               <th className="px-3 py-2 text-left">Phone</th>
               <th className="px-3 py-2 text-left">Age</th>
               <th className="px-3 py-2 text-left">Club</th>
@@ -131,16 +131,23 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 <td className="px-3 py-2">
                   {[r.firstName, r.lastName].filter(Boolean).join(" ")}
                 </td>
-                <td className="px-3 py-2">{r.email}</td>
+                <td className="px-3 py-2 max-w-[280px] whitespace-nowrap overflow-hidden text-ellipsis">
+                  {r.email}
+                </td>
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
                 <td className="px-3 py-2">
                   {r.clubId ? (
-                    <Link href={`/clubs/${r.clubId}`} className="badge">
+                    <Link
+                      href={`/clubs/${r.clubId}`}
+                      className="badge badge-primary"
+                    >
                       {r.clubOfInterest}
                     </Link>
                   ) : (
-                    <span className="badge">{r.clubOfInterest}</span>
+                    <span className="badge badge-primary">
+                      {r.clubOfInterest}
+                    </span>
                   )}
                 </td>
                 <td className="px-3 py-2">
@@ -150,7 +157,10 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 </td>
                 <td className="px-3 py-2">
                   {r.campaignName ? (
-                    <Link href={`/ads/${r.adId}`} className="badge">
+                    <Link
+                      href={`/ads/${r.adId}`}
+                      className="badge badge-primary"
+                    >
                       {r.campaignName}
                     </Link>
                   ) : (

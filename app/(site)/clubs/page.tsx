@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/client";
 import { clubs } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import Link from "next/link";
 
 export default async function SiteClubsListPage() {
@@ -13,7 +13,7 @@ export default async function SiteClubsListPage() {
       createdAt: clubs.createdAt,
     })
     .from(clubs)
-    .orderBy(desc(clubs.createdAt))
+    .orderBy(asc(clubs.name))
     .limit(500);
 
   return (
@@ -45,10 +45,7 @@ export default async function SiteClubsListPage() {
                     : ""}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/clubs/${c.id}`}
-                    className="text-primary hover:underline"
-                  >
+                  <Link href={`/clubs/${c.id}`} className="badge badge-primary">
                     View
                   </Link>
                 </td>

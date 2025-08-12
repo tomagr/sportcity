@@ -128,7 +128,9 @@ export default async function LeadsPage({
                 <td className="px-3 py-2">{r.age}</td>
                 <td className="px-3 py-2">
                   {r.clubOfInterest ? (
-                    <span className="badge">{r.clubOfInterest}</span>
+                    <span className="badge badge-primary">
+                      {r.clubOfInterest}
+                    </span>
                   ) : (
                     ""
                   )}

@@ -105,7 +105,7 @@ export default async function SiteClubDetailPage({
                   {r.campaignName ? (
                     <Link
                       href={`/ads/${r.adId}`}
-                      className="text-primary hover:underline"
+                      className="badge badge-primary"
                     >
                       {r.campaignName}
                     </Link>

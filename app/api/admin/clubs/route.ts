@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { clubs } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { verifySessionFromRequest } from "@/lib/auth";
 
 const CreateClubSchema = z.object({
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       createdAt: clubs.createdAt,
     })
     .from(clubs)
-    .orderBy(desc(clubs.createdAt))
+    .orderBy(asc(clubs.name))
     .limit(500);
   return NextResponse.json({ clubs: rows });
 }
