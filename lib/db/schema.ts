@@ -93,6 +93,9 @@ export const leads = pgTable(
     // Import batch identifier to group leads created from the same file
     importId: text('importId'),
 
+      // Whether this lead has been sent (e.g., to downstream system)
+      sent: boolean('sent').notNull().default(false),
+
     createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
   },

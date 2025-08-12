@@ -1,3 +1,4 @@
+import UploadLeadsDialogClient from "@/app/components/UploadLeadsDialogClient";
 import { verifySessionFromCookiesOnly } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db/client";
@@ -5,8 +6,9 @@ import { leads, ads, clubs } from "@/lib/db/schema";
 import { eq, ilike, or, sql, and, ne, isNotNull, gte, desc } from "drizzle-orm";
 import LeadsTableClient from "@/app/components/LeadsTableClient";
 import SearchLeadsInput from "@/app/components/SearchLeadsInput";
+import LeadsStatusTabs from "@/app/components/LeadsStatusTabs";
 
-type SearchParams = Promise<{ q?: string }>;
+type SearchParams = Promise<{ q?: string; status?: "sent" | "unsent" }>;
 
 export default async function Home({
   searchParams,
@@ -20,6 +22,9 @@ export default async function Home({
 
   const params = await searchParams;
   const q = (params?.q ?? "").trim();
+  const statusParam = (params?.status === "sent" ? "sent" : "unsent") as
+    | "sent"
+    | "unsent";
 
   const baseSelect = db
     .select({
@@ -40,7 +45,7 @@ export default async function Home({
     .leftJoin(ads, eq(leads.adId, ads.id))
     .leftJoin(clubs, eq(leads.clubId, clubs.id));
 
-  const whereClause = q
+  const textSearch = q
     ? or(
         ilike(leads.firstName, `%${q}%`),
         ilike(leads.lastName, `%${q}%`),
@@ -48,7 +53,13 @@ export default async function Home({
       )
     : undefined;
 
-  const rows = await (whereClause ? baseSelect.where(whereClause) : baseSelect);
+  const sentFilter = eq(leads.sent, statusParam === "sent");
+
+  const rows = await (
+    textSearch
+      ? baseSelect.where(and(textSearch, sentFilter))
+      : baseSelect.where(sentFilter)
+  );
 
   const [{ value: totalLeads }] = await db
     .select({ value: sql<number>`count(*)`.mapWith(Number) })
@@ -98,6 +109,7 @@ export default async function Home({
       <div className="mx-auto max-w-8xl px-4 mt-10 space-y-8">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-semibold mb-4">Upload Leads CSV</h1>
+          <UploadLeadsDialogClient />
         </div>
 
         <div>
@@ -134,6 +146,7 @@ export default async function Home({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-3">
             <h2 className="text-xl font-semibold">Leads</h2>
             <div className="flex items-center gap-3">
+              <LeadsStatusTabs value={statusParam} />
               <SearchLeadsInput defaultValue={q} />
             </div>
           </div>

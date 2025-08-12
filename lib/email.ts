@@ -1,5 +1,5 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { buildWelcomeEmailHtml, buildCredentialsEmailHtml } from "./emailTemplates";
+import { buildWelcomeEmailHtml, buildCredentialsEmailHtml, buildBaseEmailHtml, escapeHtml } from "./emailTemplates";
 
 const region = process.env.AWS_REGION!;
 const sesClient = new SESClient({ region });
@@ -66,6 +66,71 @@ export async function sendUserCredentialsEmail(params: {
     firstName,
     logoUrl,
   });
+  await sendEmail({ toEmail, subject, htmlBody });
+}
+
+type ClubLead = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phoneNumber: string | null;
+  age: string | null;
+  createdTime: Date | null;
+};
+
+export async function sendClubLeadsEmail(params: {
+  toEmail: string;
+  clubName: string;
+  leads: ClubLead[];
+  target: "kids" | "nutrition";
+}) {
+  const { toEmail, clubName, leads, target } = params;
+  const subject = `${APP_NAME}: ${leads.length} new lead(s) for ${escapeHtml(clubName)} (${target})`;
+  const logoUrl = DEFAULT_LOGO_URL;
+
+  const rowsHtml = leads
+    .map((l) => {
+      const name = [l.firstName ?? "", l.lastName ?? ""].join(" ").trim() || "—";
+      const email = l.email ?? "—";
+      const phone = l.phoneNumber ?? "—";
+      const age = l.age ?? "—";
+      const created = l.createdTime ? new Date(l.createdTime).toLocaleString() : "—";
+      return `<tr>
+        <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(name)}</td>
+        <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(email)}</td>
+        <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(phone)}</td>
+        <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(age)}</td>
+        <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(created)}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const bodyHtml = `
+    <p style="margin:0 0 12px 0;">Hello ${escapeHtml(clubName)},</p>
+    <p style="margin:0 0 12px 0;">Here ${leads.length === 1 ? "is a new lead" : `are ${leads.length} new leads`} for your ${escapeHtml(target)} program.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:separate; border-spacing:0; width:100%; margin:12px 0;">
+      <thead>
+        <tr>
+          <th align="left" style="padding:8px 12px; border:1px solid #e5e5e5; background:#f7f7f7;">Name</th>
+          <th align="left" style="padding:8px 12px; border:1px solid #e5e5e5; background:#f7f7f7;">Email</th>
+          <th align="left" style="padding:8px 12px; border:1px solid #e5e5e5; background:#f7f7f7;">Phone</th>
+          <th align="left" style="padding:8px 12px; border:1px solid #e5e5e5; background:#f7f7f7;">Age</th>
+          <th align="left" style="padding:8px 12px; border:1px solid #e5e5e5; background:#f7f7f7;">Created Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+  `;
+
+  const htmlBody = buildBaseEmailHtml({
+    title: `${leads.length} new lead(s) for ${escapeHtml(clubName)}`,
+    bodyHtml,
+    appUrl: APP_URL,
+    logoUrl,
+  });
+
   await sendEmail({ toEmail, subject, htmlBody });
 }
 

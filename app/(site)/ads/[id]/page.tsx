@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import AdEditDialog from "@/app/components/AdEditDialog";
 import type { AdRecord } from "@/app/components/AdEditDialog";
+import LeadsTableClient from "@/app/components/LeadsTableClient";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -55,6 +56,25 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
     .orderBy(desc(leads.createdAt))
     .limit(200);
 
+  // Derived lead stats
+  const totalLeads = relatedLeads.length;
+  const now = Date.now();
+  const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+  const last24h = relatedLeads.filter(
+    (l) =>
+      l.createdTime &&
+      new Date(l.createdTime as unknown as string).getTime() >=
+        twentyFourHoursAgo
+  ).length;
+  const uniqueEmails = new Set(
+    relatedLeads.map((l) => l.email).filter((e): e is string => Boolean(e))
+  ).size;
+  const uniqueClubs = new Set(
+    relatedLeads
+      .map((l) => l.clubId || l.clubOfInterest)
+      .filter((v): v is string => Boolean(v))
+  ).size;
+
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -91,59 +111,44 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
         <h2 className="mb-2 text-xl font-semibold">Leads</h2>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-accent text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2 text-left">Name</th>
-              <th className="px-3 py-2 text-left">Email</th>
-              <th className="px-3 py-2 text-left">Phone</th>
-              <th className="px-3 py-2 text-left">Club</th>
-              <th className="px-3 py-2 text-left">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {relatedLeads.map((r) => (
-              <tr key={r.id} className="border-t">
-                <td className="px-3 py-2">
-                  {[r.firstName, r.lastName].filter(Boolean).join(" ")}
-                </td>
-                <td className="px-3 py-2">{r.email}</td>
-                <td className="px-3 py-2">{r.phoneNumber}</td>
-                <td className="px-3 py-2">
-                  {r.clubId ? (
-                    <Link
-                      href={`/clubs/${r.clubId}`}
-                      className="badge badge-primary"
-                    >
-                      {r.clubOfInterest}
-                    </Link>
-                  ) : (
-                    r.clubOfInterest
-                  )}
-                </td>
-                <td className="px-3 py-2">
-                  {r.createdTime
-                    ? new Date(
-                        r.createdTime as unknown as string
-                      ).toLocaleString()
-                    : ""}
-                </td>
-              </tr>
-            ))}
-            {relatedLeads.length === 0 && (
-              <tr>
-                <td
-                  className="px-3 py-6 text-center text-muted-foreground"
-                  colSpan={5}
-                >
-                  No leads found for this ad.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Total Leads</div>
+          <div className="mt-1 text-2xl font-semibold">{totalLeads}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Last 24h</div>
+          <div className="mt-1 text-2xl font-semibold">{last24h}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Unique Emails</div>
+          <div className="mt-1 text-2xl font-semibold">{uniqueEmails}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Clubs Reached</div>
+          <div className="mt-1 text-2xl font-semibold">{uniqueClubs}</div>
+        </div>
       </div>
+
+      <LeadsTableClient
+        scope="local"
+        sendAllLabel="Send all leads to club"
+        rows={relatedLeads.map((r) => ({
+          id: r.id,
+          adId: ad.id,
+          clubId: r.clubId ?? undefined,
+          firstName: r.firstName ?? null,
+          lastName: r.lastName ?? null,
+          email: r.email ?? null,
+          phoneNumber: r.phoneNumber ?? null,
+          age: null,
+          clubOfInterest: r.clubOfInterest ?? null,
+          createdTime: r.createdTime
+            ? new Date(r.createdTime as unknown as string).toISOString()
+            : null,
+          campaignName: ad.campaignName ?? null,
+        }))}
+      />
     </div>
   );
 }

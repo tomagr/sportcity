@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import ClubEditDialog from "@/app/components/ClubEditDialog";
 import type { ClubRecord } from "@/app/components/ClubEditDialog";
+import LeadsTableClient from "@/app/components/LeadsTableClient";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -134,61 +135,25 @@ export default async function SiteClubDetailPage({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-accent text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2 text-left">Name</th>
-              <th className="px-3 py-2 text-left">Email</th>
-              <th className="px-3 py-2 text-left">Phone</th>
-              <th className="px-3 py-2 text-left">Age</th>
-              <th className="px-3 py-2 text-left">Created</th>
-              <th className="px-3 py-2 text-left">Campaign</th>
-            </tr>
-          </thead>
-          <tbody>
-            {relatedLeads.map((r) => (
-              <tr key={r.id} className="border-t">
-                <td className="px-3 py-2">
-                  {[r.firstName, r.lastName].filter(Boolean).join(" ")}
-                </td>
-                <td className="px-3 py-2">{r.email}</td>
-                <td className="px-3 py-2">{r.phoneNumber}</td>
-                <td className="px-3 py-2">{r.age}</td>
-                <td className="px-3 py-2">
-                  {r.createdTime
-                    ? new Date(
-                        r.createdTime as unknown as string
-                      ).toLocaleString()
-                    : ""}
-                </td>
-                <td className="px-3 py-2">
-                  {r.campaignName ? (
-                    <Link
-                      href={`/ads/${r.adId}`}
-                      className="badge badge-primary"
-                    >
-                      {r.campaignName}
-                    </Link>
-                  ) : (
-                    ""
-                  )}
-                </td>
-              </tr>
-            ))}
-            {relatedLeads.length === 0 && (
-              <tr>
-                <td
-                  className="px-3 py-6 text-center text-muted-foreground"
-                  colSpan={6}
-                >
-                  No leads found for this club.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <LeadsTableClient
+        scope="local"
+        sendAllLabel="Send all leads to club"
+        rows={relatedLeads.map((r) => ({
+          id: r.id,
+          adId: r.adId as string,
+          clubId: club.id,
+          firstName: r.firstName ?? null,
+          lastName: r.lastName ?? null,
+          email: r.email ?? null,
+          phoneNumber: r.phoneNumber ?? null,
+          age: r.age ?? null,
+          clubOfInterest: club.name,
+          createdTime: r.createdTime
+            ? new Date(r.createdTime as unknown as string).toISOString()
+            : null,
+          campaignName: r.campaignName ?? null,
+        }))}
+      />
     </div>
   );
 }
