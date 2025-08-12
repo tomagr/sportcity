@@ -5,7 +5,7 @@ import Link from "next/link";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
-export default async function AdDetailPage({ params }: { params: Params }) {
+export default async function SiteAdDetailPage({ params }: { params: Params }) {
   const { id } = await params;
   const [ad] = await db
     .select({
@@ -27,10 +27,10 @@ export default async function AdDetailPage({ params }: { params: Params }) {
 
   if (!ad) {
     return (
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="mx-auto max-w-5xl p-6">
         <h1 className="text-2xl font-semibold mb-4">Ad not found</h1>
-        <Link href="/admin/ads" className="text-primary hover:underline">
-          Back to Ads
+        <Link href="/" className="text-primary hover:underline">
+          Back to Home
         </Link>
       </div>
     );
@@ -53,7 +53,7 @@ export default async function AdDetailPage({ params }: { params: Params }) {
     .limit(200);
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-5xl p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">
           {ad.campaignName || ad.adName || ad.adId}
@@ -61,28 +61,28 @@ export default async function AdDetailPage({ params }: { params: Params }) {
         <p className="text-muted-foreground">Ad detail</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-white p-4">
-          <div className="text-sm text-muted-foreground mb-1">Campaign</div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-lg border bg-card p-4 text-card-foreground">
+          <div className="mb-1 text-sm text-muted-foreground">Campaign</div>
           <div className="font-medium">{ad.campaignName || ad.campaignId}</div>
         </div>
-        <div className="rounded-lg border bg-white p-4">
-          <div className="text-sm text-muted-foreground mb-1">Ad</div>
+        <div className="rounded-lg border bg-card p-4 text-card-foreground">
+          <div className="mb-1 text-sm text-muted-foreground">Ad</div>
           <div className="font-medium">{ad.adName || ad.adId}</div>
         </div>
-        <div className="rounded-lg border bg-white p-4">
-          <div className="text-sm text-muted-foreground mb-1">Adset</div>
+        <div className="rounded-lg border bg-card p-4 text-card-foreground">
+          <div className="mb-1 text-sm text-muted-foreground">Adset</div>
           <div className="font-medium">{ad.adsetName || ad.adsetId}</div>
         </div>
-        <div className="rounded-lg border bg-white p-4">
-          <div className="text-sm text-muted-foreground mb-1">Form</div>
+        <div className="rounded-lg border bg-card p-4 text-card-foreground">
+          <div className="mb-1 text-sm text-muted-foreground">Form</div>
           <div className="font-medium">{ad.formName || ad.formId}</div>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-accent text-muted-foreground">
             <tr>
               <th className="px-3 py-2 text-left">Name</th>
               <th className="px-3 py-2 text-left">Email</th>

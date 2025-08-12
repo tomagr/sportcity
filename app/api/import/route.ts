@@ -90,6 +90,32 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // Build a normalized club name cache to avoid duplicate creations during import
+    const normalizeClubKey = (name: string): string =>
+      name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+
+    const toDisplayClubName = (name: string): string => {
+      const trimmed = name.trim().replace(/\s+/g, ' ');
+      return trimmed
+        .toLocaleLowerCase()
+        .split(' ')
+        .map((w) => (w ? w[0].toLocaleUpperCase() + w.slice(1) : w))
+        .join(' ');
+    };
+
+    const existingClubs = await db.select({ id: clubs.id, name: clubs.name }).from(clubs);
+    const clubKeyToId = new Map<string, string>();
+    for (const c of existingClubs) {
+      const key = normalizeClubKey(c.name);
+      if (!clubKeyToId.has(key)) clubKeyToId.set(key, c.id);
+    }
+
     const form = await req.formData();
     const file = form.get('file') as File | null;
     const importId = String(form.get('importId') || '');
@@ -168,19 +194,20 @@ export async function POST(req: NextRequest) {
 
       // Resolve Club by name (create if missing)
       let clubId: string | null = null;
-      const clubName = leadPayload.clubName?.trim();
-      if (clubName) {
-        const existingClub = await db.query.clubs.findFirst({
-          where: (c, { eq }) => eq(c.name, clubName),
-        });
-        if (existingClub) {
-          clubId = existingClub.id;
+      const rawClubName = leadPayload.clubName?.trim();
+      if (rawClubName) {
+        const key = normalizeClubKey(rawClubName);
+        const cached = clubKeyToId.get(key);
+        if (cached) {
+          clubId = cached;
         } else {
+          const displayName = toDisplayClubName(rawClubName);
           const insertedClub = await db
             .insert(clubs)
-            .values({ name: clubName })
+            .values({ name: displayName })
             .returning({ id: clubs.id });
           clubId = insertedClub[0]?.id ?? null;
+          if (clubId) clubKeyToId.set(key, clubId);
         }
       }
 

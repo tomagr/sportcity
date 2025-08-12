@@ -50,7 +50,10 @@ export default async function AdminAdsPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td className="px-3 py-6 text-center text-gray-500" colSpan={6}>
+                <td
+                  className="px-3 py-6 text-center text-muted-foreground"
+                  colSpan={6}
+                >
                   No ads found.
                 </td>
               </tr>

@@ -35,36 +35,45 @@ export default async function AdminLayout({
 }) {
   await requireAdmin();
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between text-foreground">
           <div className="flex items-center gap-4">
             <Link
               href="/admin"
-              className="text-lg font-semibold text-gray-900 hover:text-black"
+              className="text-lg font-semibold text-foreground hover:text-primary"
             >
               Admin
             </Link>
           </div>
           <nav className="flex items-center gap-6 text-sm">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
+            <Link
+              href="/admin"
+              className="text-muted-foreground hover:text-foreground"
+            >
               Dashboard
             </Link>
             <Link
               href="/admin/users"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               Users
             </Link>
             <Link
               href="/admin/leads"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               Leads
             </Link>
             <Link
+              href="/admin/clubs"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Clubs
+            </Link>
+            <Link
               href="/admin/ads"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               Ads
             </Link>

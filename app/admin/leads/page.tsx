@@ -137,7 +137,10 @@ export default async function LeadsPage({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td className="px-3 py-6 text-center text-gray-500" colSpan={7}>
+                <td
+                  className="px-3 py-6 text-center text-muted-foreground"
+                  colSpan={7}
+                >
                   No leads found.
                 </td>
               </tr>

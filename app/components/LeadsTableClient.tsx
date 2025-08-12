@@ -7,6 +7,7 @@ import Link from "next/link";
 export type LeadRow = {
   id: string;
   adId: string;
+  clubId?: string | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -133,7 +134,18 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 <td className="px-3 py-2">{r.email}</td>
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
-                <td className="px-3 py-2 capitalize">{r.clubOfInterest}</td>
+                <td className="px-3 py-2 capitalize">
+                  {r.clubId ? (
+                    <Link
+                      href={`/clubs/${r.clubId}`}
+                      className="text-primary hover:underline"
+                    >
+                      {r.clubOfInterest}
+                    </Link>
+                  ) : (
+                    r.clubOfInterest
+                  )}
+                </td>
                 <td className="px-3 py-2">
                   {r.createdTime
                     ? new Date(r.createdTime).toLocaleString()
@@ -142,7 +154,7 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 <td className="px-3 py-2">
                   {r.campaignName ? (
                     <Link
-                      href={`/admin/ads/${r.adId}`}
+                      href={`/ads/${r.adId}`}
                       className="text-primary hover:underline"
                     >
                       {r.campaignName}
