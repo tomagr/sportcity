@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { db } from "@/lib/db/client";
-import { leads, ads } from "@/lib/db/schema";
+import { leads, ads, clubs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import LeadsClubFilter from "@/app/components/LeadsClubFilter";
+import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -13,29 +14,66 @@ export default async function LeadsPage({
   const params = await searchParams;
   const importId =
     typeof params.importId === "string" ? params.importId : undefined;
+  const clubParam = params.club;
+  const selectedClubs: string[] = Array.isArray(clubParam)
+    ? clubParam
+        .flatMap((v) => String(v).split(","))
+        .map((v) => v.trim())
+        .filter(Boolean)
+    : typeof clubParam === "string"
+    ? clubParam
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean)
+    : [];
   const success = params.success === "1";
   const created =
     typeof params.created === "string" ? params.created : undefined;
   const updated =
     typeof params.updated === "string" ? params.updated : undefined;
 
-  const rows = await db
+  // Build base query joined with Ads and Clubs
+
+  const baseQuery = db
     .select({
       id: leads.id,
-      adId: ads.id,
+      adId: leads.adId,
       firstName: leads.firstName,
       lastName: leads.lastName,
       email: leads.email,
       phoneNumber: leads.phoneNumber,
       age: leads.age,
-      clubOfInterest: leads.clubOfInterest,
+      clubOfInterest: clubs.name,
       createdTime: leads.createdTime,
       metaId: leads.metaId,
       campaignName: ads.campaignName,
     })
     .from(leads)
     .leftJoin(ads, eq(leads.adId, ads.id))
-    .where(importId ? eq(leads.importId, importId) : undefined);
+    .leftJoin(clubs, eq(leads.clubId, clubs.id));
+
+  const rows = await (importId
+    ? baseQuery.where(eq(leads.importId, importId))
+    : baseQuery);
+
+  const filteredRows =
+    selectedClubs.length > 0
+      ? rows.filter(
+          (r) => r.clubOfInterest && selectedClubs.includes(r.clubOfInterest)
+        )
+      : rows;
+
+  // distinct clubs for filter buttons (respect current import filter)
+  const clubRows = await db
+    .select({ club: clubs.name })
+    .from(leads)
+    .leftJoin(clubs, eq(leads.clubId, clubs.id))
+    .where(importId ? eq(leads.importId, importId) : undefined)
+    .groupBy(clubs.name);
+  const allClubs = clubRows
+    .map((r) => r.club)
+    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    .sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -52,6 +90,9 @@ export default async function LeadsPage({
           </p>
         </div>
       )}
+      <div className="mb-4">
+        <LeadsClubFilter allClubs={allClubs} selectedClubs={selectedClubs} />
+      </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
@@ -66,7 +107,7 @@ export default async function LeadsPage({
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {filteredRows.map((r) => (
               <tr key={r.id} className="border-t">
                 <td className="px-3 py-2">
                   {[r.firstName, r.lastName].filter(Boolean).join(" ")}
@@ -81,25 +122,22 @@ export default async function LeadsPage({
                     : ""}
                 </td>
                 <td className="px-3 py-2">
-                  {r.adId ? (
+                  {r.campaignName ? (
                     <Link
                       href={`/admin/ads/${r.adId}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary hover:underline"
                     >
-                      {r.campaignName || "View campaign"}
+                      {r.campaignName}
                     </Link>
                   ) : (
-                    <span className="text-gray-500">—</span>
+                    ""
                   )}
                 </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td
-                  className="px-3 py-6 text-center text-gray-500"
-                  colSpan={10}
-                >
+                <td className="px-3 py-6 text-center text-gray-500" colSpan={7}>
                   No leads found.
                 </td>
               </tr>

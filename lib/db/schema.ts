@@ -22,6 +22,24 @@ export const passwordResetTokens = pgTable('PasswordResetToken', {
 });
 
 
+// Clubs table
+export const clubs = pgTable(
+  'Club',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    nutritionEmail: text('nutrition_email'),
+    kidsEmail: text('kids_email'),
+    createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nameUniqueIdx: uniqueIndex('Club_name_unique').on(t.name),
+  })
+);
+
+// clubsRelations is defined after leads to avoid temporal dead zone
+
 // Ads table (external IDs from Meta are stored as text)
 export const ads = pgTable(
   'Ad',
@@ -62,7 +80,10 @@ export const leads = pgTable(
     phoneNumber: text('phoneNumber'),
     leadStatus: text('leadStatus'),
     age: text('age'),
-    clubOfInterest: text('clubOfInterest'),
+    clubId: uuid('clubId').references(() => clubs.id, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    }),
     platform: text('platform'),
     createdTime: timestamp('createdTime', { mode: 'date' }),
 
@@ -86,6 +107,14 @@ export const leadsRelations = relations(leads, ({ one }) => ({
     fields: [leads.adId],
     references: [ads.id],
   }),
+  club: one(clubs, {
+    fields: [leads.clubId],
+    references: [clubs.id],
+  }),
+}));
+
+export const clubsRelations = relations(clubs, ({ many }) => ({
+  leads: many(leads),
 }));
 
 

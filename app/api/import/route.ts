@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
-import { ads, leads } from '@/lib/db/schema';
+import { ads, leads, clubs } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Normalize CSV header keys: lowercased, trimmed, spaces/accents replaced, punctuation removed
@@ -56,7 +56,7 @@ function parseAdFromRow(row: ImportRow) {
 function parseLeadFromRow(row: ImportRow, adRecordId: string, importId: string) {
   // Age and club across schemas with accents
   const age = row['que_edad_tiene_tu_peque'] ?? row['que_edad_tiene_tu_peque_'];
-  const club = row['cual_es_el_club_de_tu_interes'] ?? row['cual_es_el_club_de_tu_preferencia'];
+  const clubName = row['cual_es_el_club_de_tu_interes'] ?? row['cual_es_el_club_de_tu_preferencia'];
 
   // Meta ID and platform vary
   const metaId = row['id'] ?? row['lead_id'];
@@ -77,7 +77,7 @@ function parseLeadFromRow(row: ImportRow, adRecordId: string, importId: string) 
     phoneNumber: phone ? String(phone) : null,
     leadStatus: leadStatus ? String(leadStatus) : null,
     age: age ? String(age) : null,
-    clubOfInterest: club ? String(club) : null,
+    clubName: clubName ? String(clubName) : null,
     platform: platform ? String(platform) : null,
     createdTime: parseCreatedTime(row['created_time']),
     adId: adRecordId,
@@ -166,6 +166,24 @@ export async function POST(req: NextRequest) {
       const leadPayload = parseLeadFromRow(row, adRecordId, importId);
       if (!leadPayload.metaId) continue;
 
+      // Resolve Club by name (create if missing)
+      let clubId: string | null = null;
+      const clubName = leadPayload.clubName?.trim();
+      if (clubName) {
+        const existingClub = await db.query.clubs.findFirst({
+          where: (c, { eq }) => eq(c.name, clubName),
+        });
+        if (existingClub) {
+          clubId = existingClub.id;
+        } else {
+          const insertedClub = await db
+            .insert(clubs)
+            .values({ name: clubName })
+            .returning({ id: clubs.id });
+          clubId = insertedClub[0]?.id ?? null;
+        }
+      }
+
       const existingLead = await db.query.leads.findFirst({
         where: (l, { eq }) => eq(l.metaId, leadPayload.metaId),
       });
@@ -180,7 +198,7 @@ export async function POST(req: NextRequest) {
             phoneNumber: leadPayload.phoneNumber,
             leadStatus: leadPayload.leadStatus,
             age: leadPayload.age,
-            clubOfInterest: leadPayload.clubOfInterest,
+            clubId: clubId ?? existingLead.clubId ?? null,
             platform: leadPayload.platform,
             createdTime: leadPayload.createdTime ?? existingLead.createdTime,
             adId: adRecordId,
@@ -190,7 +208,20 @@ export async function POST(req: NextRequest) {
           .where(eq(leads.id, existingLead.id));
         updated += 1;
       } else {
-        await db.insert(leads).values(leadPayload);
+        await db.insert(leads).values({
+          metaId: leadPayload.metaId,
+          firstName: leadPayload.firstName,
+          lastName: leadPayload.lastName,
+          email: leadPayload.email,
+          phoneNumber: leadPayload.phoneNumber,
+          leadStatus: leadPayload.leadStatus,
+          age: leadPayload.age,
+          clubId: clubId,
+          platform: leadPayload.platform,
+          createdTime: leadPayload.createdTime,
+          adId: adRecordId,
+          importId,
+        });
         created += 1;
       }
     }

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export type LeadRow = {
   id: string;
-  adId: string | null;
+  adId: string;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -140,15 +140,15 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                     : ""}
                 </td>
                 <td className="px-3 py-2">
-                  {r.adId ? (
+                  {r.campaignName ? (
                     <Link
                       href={`/admin/ads/${r.adId}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary hover:underline"
                     >
-                      {r.campaignName || "View campaign"}
+                      {r.campaignName}
                     </Link>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    ""
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
