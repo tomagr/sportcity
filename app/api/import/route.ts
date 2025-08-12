@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { ads, leads, clubs } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { normalizeNameKey, toDisplayName } from '@/lib/name';
 
 // Normalize CSV header keys: lowercased, trimmed, spaces/accents replaced, punctuation removed
@@ -74,7 +74,7 @@ function parseLeadFromRow(row: ImportRow, adRecordId: string, importId: string) 
     metaId: metaId ? String(metaId) : '',
     firstName: firstName ? String(firstName) : null,
     lastName: lastName ? String(lastName) : null,
-    email: email ? String(email) : null,
+    email: email ? String(email).trim().toLowerCase() : null,
     phoneNumber: phone ? String(phone) : null,
     leadStatus: leadStatus ? String(leadStatus) : null,
     age: age ? String(age) : null,
@@ -220,21 +220,54 @@ export async function POST(req: NextRequest) {
           .where(eq(leads.id, existingLead.id));
         updated += 1;
       } else {
-        await db.insert(leads).values({
-          metaId: leadPayload.metaId,
-          firstName: leadPayload.firstName,
-          lastName: leadPayload.lastName,
-          email: leadPayload.email,
-          phoneNumber: leadPayload.phoneNumber,
-          leadStatus: leadPayload.leadStatus,
-          age: leadPayload.age,
-          clubId: clubId,
-          platform: leadPayload.platform,
-          createdTime: leadPayload.createdTime,
-          adId: adRecordId,
-          importId,
-        });
-        created += 1;
+        // If metaId is new, also deduplicate by (email, createdTime)
+        let dupByEmailTime: { id: string } | undefined;
+        if (leadPayload.email && leadPayload.createdTime) {
+          const found = await db.query.leads.findFirst({
+            where: (l, { and, eq }) =>
+              and(eq(l.email, leadPayload.email as string), eq(l.createdTime, leadPayload.createdTime as Date)),
+            columns: { id: true },
+          });
+          dupByEmailTime = found ?? undefined;
+        }
+
+        if (dupByEmailTime) {
+          await db
+            .update(leads)
+            .set({
+              metaId: leadPayload.metaId,
+              firstName: leadPayload.firstName,
+              lastName: leadPayload.lastName,
+              email: leadPayload.email,
+              phoneNumber: leadPayload.phoneNumber,
+              leadStatus: leadPayload.leadStatus,
+              age: leadPayload.age,
+              clubId: clubId,
+              platform: leadPayload.platform,
+              createdTime: leadPayload.createdTime,
+              adId: adRecordId,
+              importId,
+              updatedAt: new Date(),
+            })
+            .where(eq(leads.id, dupByEmailTime.id));
+          updated += 1;
+        } else {
+          await db.insert(leads).values({
+            metaId: leadPayload.metaId,
+            firstName: leadPayload.firstName,
+            lastName: leadPayload.lastName,
+            email: leadPayload.email,
+            phoneNumber: leadPayload.phoneNumber,
+            leadStatus: leadPayload.leadStatus,
+            age: leadPayload.age,
+            clubId: clubId,
+            platform: leadPayload.platform,
+            createdTime: leadPayload.createdTime,
+            adId: adRecordId,
+            importId,
+          });
+          created += 1;
+        }
       }
     }
 

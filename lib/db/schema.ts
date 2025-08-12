@@ -98,6 +98,11 @@ export const leads = pgTable(
   },
   (t) => ({
     metaIdUniqueIdx: uniqueIndex('Lead_metaId_unique').on(t.metaId),
+    // Enforce no duplicate leads with same email+createdTime
+    emailCreatedTimeUniqueIdx: uniqueIndex('Lead_email_createdTime_unique').on(
+      t.email,
+      t.createdTime,
+    ),
     importIdx: index('Lead_importId_idx').on(t.importId),
   })
 );

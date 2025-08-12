@@ -13,7 +13,7 @@ export default async function SiteLayout({
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container pt-16">{children}</main>
+      <main className="container pt-16 ">{children}</main>
     </div>
   );
 }

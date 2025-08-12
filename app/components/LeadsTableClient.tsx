@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export type LeadRow = {
   id: string;
@@ -58,16 +59,11 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
       if (!res.ok) throw new Error("Failed to delete leads");
       console.log(`LOG =====> Deleted leads: ${ids.join(",")}`);
       setSelectedIds(new Set());
+      toast.success("Leads deleted");
       router.refresh();
     } catch (e) {
       console.log("LOG =====> Delete leads error", e);
-      // simple toast
-      const el = document.createElement("div");
-      el.className =
-        "fixed top-4 right-4 z-50 rounded-md px-4 py-2 shadow bg-red-100 text-red-800";
-      el.textContent = "Failed to delete leads";
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 2500);
+      toast.error("Failed to delete leads");
     } finally {
       setBusy(false);
     }

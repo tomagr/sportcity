@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast as sonnerToast } from "sonner";
 
 export type ClubRow = {
   id: string;
@@ -13,7 +14,13 @@ export type ClubRow = {
 
 type ModalMode = "create" | "edit" | null;
 
-export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
+export default function ClubsTableClient({
+  rows,
+  apiBase = "/api/admin/clubs",
+}: {
+  rows: ClubRow[];
+  apiBase?: string;
+}) {
   const router = useRouter();
 
   const [busy, setBusy] = useState(false);
@@ -55,14 +62,13 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
     setModalMode(null);
   }, []);
 
-  const toast = useCallback((message: string, type: "success" | "error" = "success") => {
-    const bg = type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-    const el = document.createElement("div");
-    el.className = `fixed top-4 right-4 z-50 rounded-md px-4 py-2 shadow ${bg}`;
-    el.textContent = message;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2500);
-  }, []);
+  const toast = useCallback(
+    (message: string, type: "success" | "error" = "success") => {
+      if (type === "error") sonnerToast.error(message);
+      else sonnerToast.success(message);
+    },
+    []
+  );
 
   async function submitForm(event: React.FormEvent) {
     event.preventDefault();
@@ -74,7 +80,7 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
     try {
       setBusy(true);
       if (modalMode === "create") {
-        const res = await fetch("/api/admin/clubs", {
+        const res = await fetch(`${apiBase}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -88,7 +94,7 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
         console.log("LOG =====> Club created via modal");
         toast("Club created");
       } else if (modalMode === "edit" && editingId) {
-        const res = await fetch(`/api/admin/clubs/${editingId}`, {
+        const res = await fetch(`${apiBase}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -116,7 +122,7 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
     if (!confirmDeleteId) return;
     try {
       setBusy(true);
-      const res = await fetch(`/api/admin/clubs/${confirmDeleteId}`, {
+      const res = await fetch(`${apiBase}/${confirmDeleteId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -160,7 +166,9 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
                 <td className="px-4 py-3">{c.nutritionEmail || "—"}</td>
                 <td className="px-4 py-3">{c.kidsEmail || "—"}</td>
                 <td className="px-4 py-3">
-                  {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
+                  {c.createdAt
+                    ? new Date(c.createdAt).toLocaleDateString()
+                    : ""}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
@@ -185,7 +193,10 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-center text-muted-foreground" colSpan={5}>
+                <td
+                  className="px-4 py-6 text-center text-muted-foreground"
+                  colSpan={5}
+                >
                   No clubs found.
                 </td>
               </tr>
@@ -216,7 +227,9 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Nutrition Email</label>
+                <label className="block text-sm font-medium mb-1">
+                  Nutrition Email
+                </label>
                 <input
                   type="email"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -226,7 +239,9 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Kids Email</label>
+                <label className="block text-sm font-medium mb-1">
+                  Kids Email
+                </label>
                 <input
                   type="email"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -259,7 +274,10 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
 
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmDeleteId(null)} />
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setConfirmDeleteId(null)}
+          />
           <div className="relative z-10 w-[min(420px,92vw)] rounded-xl border border-border bg-card p-5 shadow-xl">
             <h3 className="text-lg font-semibold mb-2">Delete club?</h3>
             <p className="text-sm text-muted-foreground mb-5">
@@ -289,5 +307,3 @@ export default function ClubsTableClient({ rows }: { rows: ClubRow[] }) {
     </div>
   );
 }
-
-

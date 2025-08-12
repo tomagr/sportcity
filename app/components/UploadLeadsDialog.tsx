@@ -27,6 +27,11 @@ export default function UploadLeadsDialog() {
       let interval: number | undefined;
       let fallbackTimeout: number | undefined;
       let stop = false;
+      const lastStatsRef = {
+        // Track last seen created count and last refresh time to avoid spamming refreshes
+        created: 0,
+        lastRefreshMs: 0,
+      };
       try {
         setIsUploading(true);
         setProgress(5);
@@ -65,6 +70,21 @@ export default function UploadLeadsDialog() {
               Math.min(99, Math.round((created / totalRows) * 100))
             );
             setProgress((prev) => (stop ? prev : percent));
+
+            // If new rows were created since last check, refresh the list, but throttle to every ~3s
+            const nowMs = Date.now();
+            const shouldRefresh =
+              !stop &&
+              created > lastStatsRef.created &&
+              nowMs - lastStatsRef.lastRefreshMs > 3000;
+            if (shouldRefresh) {
+              console.log(
+                `LOG =====> Mid-import refresh: created so far ${created}/${totalRows}`
+              );
+              lastStatsRef.created = created;
+              lastStatsRef.lastRefreshMs = nowMs;
+              router.refresh();
+            }
           } catch {
             // ignore transient errors
           }
