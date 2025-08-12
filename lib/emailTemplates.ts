@@ -108,3 +108,41 @@ export function buildWelcomeEmailHtml(params: {
 }
 
 
+export function buildCredentialsEmailHtml(params: {
+  appUrl: string;
+  email: string;
+  password: string;
+  firstName?: string | null;
+  logoUrl?: string;
+}): string {
+  const safeName = (params.firstName ?? "").trim();
+  const greetingName = safeName.length > 0 ? safeName : "there";
+  const safeEmail = escapeHtml(params.email);
+  const safePassword = escapeHtml(params.password);
+
+  const bodyHtml = `
+    <p style="margin:0 0 12px 0;">Hi ${escapeHtml(greetingName)}, your ${escapeHtml(APP_NAME)} account has been created by an administrator.</p>
+    <p style=\"margin:0 0 12px 0;\">Here are your credentials:</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:separate; border-spacing:0; margin:0 0 12px 0; width:100%;">
+      <tr>
+        <td style="padding:8px 12px; border:1px solid ${palette.border}; border-right:none; font-weight:600; width:120px;">Email</td>
+        <td style="padding:8px 12px; border:1px solid ${palette.border};">${safeEmail}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px; border:1px solid ${palette.border}; border-right:none; font-weight:600;">Password</td>
+        <td style="padding:8px 12px; border:1px solid ${palette.border}; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;">${safePassword}</td>
+      </tr>
+    </table>
+    <p style=\"margin:0 0 0 0;\">For security, please log in and change your password.</p>
+  `;
+  return buildBaseEmailHtml({
+    title: `Your account credentials`,
+    bodyHtml,
+    ctaText: "Log in",
+    ctaUrl: `${params.appUrl}/login`,
+    appUrl: params.appUrl,
+    logoUrl: params.logoUrl,
+  });
+}
+
+

@@ -39,6 +39,24 @@ export default function NewUserPage() {
     <div className="max-w-xl">
       <h2 className="text-2xl font-semibold mb-4">New User</h2>
       <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">First name</label>
+            <input
+              className="input"
+              value={form.firstName}
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label">Last name</label>
+            <input
+              className="input"
+              value={form.lastName}
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+            />
+          </div>
+        </div>
         <div>
           <label className="label">Email</label>
           <input
@@ -60,24 +78,7 @@ export default function NewUserPage() {
             minLength={8}
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="label">First name</label>
-            <input
-              className="input"
-              value={form.firstName}
-              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Last name</label>
-            <input
-              className="input"
-              value={form.lastName}
-              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-            />
-          </div>
-        </div>
+
         <div className="flex items-center gap-2">
           <input
             id="isAdmin"
@@ -97,6 +98,3 @@ export default function NewUserPage() {
     </div>
   );
 }
-
-
-

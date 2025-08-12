@@ -1,5 +1,5 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { buildWelcomeEmailHtml } from "./emailTemplates";
+import { buildWelcomeEmailHtml, buildCredentialsEmailHtml } from "./emailTemplates";
 
 const region = process.env.AWS_REGION!;
 const sesClient = new SESClient({ region });
@@ -51,6 +51,24 @@ export async function sendPasswordResetEmail(toEmail: string, token: string) {
   await sendEmail({ toEmail, subject, htmlBody });
 }
 
+export async function sendUserCredentialsEmail(params: {
+  toEmail: string;
+  password: string;
+  firstName?: string | null;
+}) {
+  const { toEmail, password, firstName } = params;
+  const subject = `Your ${APP_NAME} account credentials`;
+  const logoUrl = DEFAULT_LOGO_URL;
+  const htmlBody = buildCredentialsEmailHtml({
+    appUrl: APP_URL,
+    email: toEmail,
+    password,
+    firstName,
+    logoUrl,
+  });
+  await sendEmail({ toEmail, subject, htmlBody });
+}
+
 async function sendEmail({
   toEmail,
   subject,
@@ -63,7 +81,6 @@ async function sendEmail({
   const source = SES_FROM_EMAIL ? `${SES_FROM_NAME} <${SES_FROM_EMAIL}>` : toEmail;
 
   console.log(`LOG =====> Sending email to ${toEmail} with subject "${subject}"`);
-  console.log(`LOG =====> Email HTML body below:\n${htmlBody}`);
 
   const command = new SendEmailCommand({
     Destination: { ToAddresses: [toEmail] },

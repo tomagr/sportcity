@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { db } from "@/lib/db/client";
 import { leads, ads } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -21,18 +22,16 @@ export default async function LeadsPage({
   const rows = await db
     .select({
       id: leads.id,
+      adId: ads.id,
       firstName: leads.firstName,
       lastName: leads.lastName,
       email: leads.email,
       phoneNumber: leads.phoneNumber,
       age: leads.age,
       clubOfInterest: leads.clubOfInterest,
-      platform: leads.platform,
       createdTime: leads.createdTime,
       metaId: leads.metaId,
-      adName: ads.adName,
       campaignName: ads.campaignName,
-      formName: ads.formName,
     })
     .from(leads)
     .leftJoin(ads, eq(leads.adId, ads.id))
@@ -62,11 +61,8 @@ export default async function LeadsPage({
               <th className="px-3 py-2 text-left">Phone</th>
               <th className="px-3 py-2 text-left">Age</th>
               <th className="px-3 py-2 text-left">Club</th>
-              <th className="px-3 py-2 text-left">Platform</th>
               <th className="px-3 py-2 text-left">Created Time</th>
-              <th className="px-3 py-2 text-left">Ad</th>
               <th className="px-3 py-2 text-left">Campaign</th>
-              <th className="px-3 py-2 text-left">Form</th>
             </tr>
           </thead>
           <tbody>
@@ -79,15 +75,23 @@ export default async function LeadsPage({
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
                 <td className="px-3 py-2 capitalize">{r.clubOfInterest}</td>
-                <td className="px-3 py-2 uppercase">{r.platform}</td>
                 <td className="px-3 py-2">
                   {r.createdTime
                     ? new Date(r.createdTime).toLocaleString()
                     : ""}
                 </td>
-                <td className="px-3 py-2">{r.adName}</td>
-                <td className="px-3 py-2">{r.campaignName}</td>
-                <td className="px-3 py-2">{r.formName}</td>
+                <td className="px-3 py-2">
+                  {r.adId ? (
+                    <Link
+                      href={`/admin/ads/${r.adId}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {r.campaignName || "View campaign"}
+                    </Link>
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (

@@ -5,6 +5,7 @@ import { users } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/password";
 import { verifySessionFromRequest } from "@/lib/auth";
+import { sendUserCredentialsEmail } from "@/lib/email";
 
 const CreateUserSchema = z.object({
   email: z.string().email(),
@@ -50,6 +51,10 @@ export async function POST(req: NextRequest) {
       .values({ email, passwordHash, firstName: firstName || null, lastName: lastName || null, isAdmin: !!isAdmin })
       .returning({ id: users.id, email: users.email });
     console.log(`LOG =====> Admin created user ${created.email}`);
+    // Fire-and-forget email send; don't block response if SES is slow
+    sendUserCredentialsEmail({ toEmail: email, password, firstName: firstName || undefined }).catch((e) => {
+      console.log("LOG =====> Failed sending credentials email", e);
+    });
     return NextResponse.json({ id: created.id });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

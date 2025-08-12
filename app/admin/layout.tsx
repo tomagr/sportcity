@@ -39,16 +39,35 @@ export default async function AdminLayout({
       <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-              ← Back to site
-            </Link>
-            <Link href="/admin" className="text-lg font-semibold text-gray-900 hover:text-black">
+            <Link
+              href="/admin"
+              className="text-lg font-semibold text-gray-900 hover:text-black"
+            >
               Admin
             </Link>
           </div>
           <nav className="flex items-center gap-6 text-sm">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
-            <Link href="/admin/users" className="text-gray-600 hover:text-gray-900">Users</Link>
+            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/users"
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Users
+            </Link>
+            <Link
+              href="/admin/leads"
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Leads
+            </Link>
+            <Link
+              href="/admin/ads"
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Ads
+            </Link>
           </nav>
         </div>
       </header>
@@ -56,6 +75,3 @@ export default async function AdminLayout({
     </div>
   );
 }
-
-
-

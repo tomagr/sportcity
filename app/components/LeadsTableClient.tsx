@@ -1,21 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export type LeadRow = {
   id: string;
+  adId: string | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
   phoneNumber: string | null;
   age: string | null;
   clubOfInterest: string | null;
-  platform: string | null;
   createdTime: string | null; // ISO string or null
-  adName: string | null;
   campaignName: string | null;
-  formName: string | null;
 };
 
 export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
@@ -80,14 +79,16 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : ""}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={busy || selectedIds.size === 0}
-            onClick={() => deleteIds(Array.from(selectedIds))}
-            className="btn btn-secondary"
-          >
-            Delete selected
-          </button>
+          {selectedIds.size > 0 ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => deleteIds(Array.from(selectedIds))}
+              className="btn btn-secondary"
+            >
+              Delete selected
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -109,11 +110,8 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
               <th className="px-3 py-2 text-left">Phone</th>
               <th className="px-3 py-2 text-left">Age</th>
               <th className="px-3 py-2 text-left">Club</th>
-              <th className="px-3 py-2 text-left">Platform</th>
               <th className="px-3 py-2 text-left">Created Time</th>
-              <th className="px-3 py-2 text-left">Ad</th>
               <th className="px-3 py-2 text-left">Campaign</th>
-              <th className="px-3 py-2 text-left">Form</th>
               <th className="px-3 py-2 text-right w-24">Actions</th>
             </tr>
           </thead>
@@ -136,15 +134,23 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
                 <td className="px-3 py-2 capitalize">{r.clubOfInterest}</td>
-                <td className="px-3 py-2 uppercase">{r.platform}</td>
                 <td className="px-3 py-2">
                   {r.createdTime
                     ? new Date(r.createdTime).toLocaleString()
                     : ""}
                 </td>
-                <td className="px-3 py-2">{r.adName}</td>
-                <td className="px-3 py-2">{r.campaignName}</td>
-                <td className="px-3 py-2">{r.formName}</td>
+                <td className="px-3 py-2">
+                  {r.adId ? (
+                    <Link
+                      href={`/admin/ads/${r.adId}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {r.campaignName || "View campaign"}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
                 <td className="px-3 py-2 text-right">
                   <button
                     type="button"
