@@ -1,0 +1,6 @@
+---
+description: Always use tailwind for the styles. Read the design system from /app/globals.css
+
+globs:
+alwaysApply: false
+---
