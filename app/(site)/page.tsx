@@ -103,14 +103,14 @@ export default async function Home({
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-3">Lead stats</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <h2 className="text-lg font-semibold mb-2">Lead stats</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <StatCard label="Total" value={totalLeads} />
             <StatCard label="Last 7 days" value={leadsLast7} />
             <StatCard label="Unique emails" value={uniqueEmails} />
             <StatCard label="With phone" value={withPhone} />
           </div>
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <TopList
               title="Top clubs"
               rows={
@@ -159,11 +159,9 @@ export default async function Home({
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">
-        {value.toLocaleString()}
-      </div>
+    <div className="rounded-lg border border-border bg-card p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 text-xl font-semibold">{value.toLocaleString()}</div>
     </div>
   );
 }
@@ -177,8 +175,8 @@ function TopList({
 }) {
   const safeRows = rows.filter((r) => r.name && r.name.trim().length > 0);
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="text-sm font-medium mb-3">{title}</div>
+    <div className="rounded-lg border border-border bg-card p-3">
+      <div className="text-xs font-medium mb-2">{title}</div>
       {safeRows.length === 0 ? (
         <div className="text-sm text-muted-foreground">No data</div>
       ) : (
@@ -186,7 +184,7 @@ function TopList({
           {safeRows.map((r, idx) => (
             <li
               key={`${r.name}-${idx}`}
-              className="py-2 flex items-center justify-between"
+              className="py-1.5 flex items-center justify-between"
             >
               <span className="truncate max-w-[70%]">{r.name}</span>
               <span className="tabular-nums text-muted-foreground">

@@ -2,6 +2,7 @@ import { db } from "@/lib/db/client";
 import { ads, leads, clubs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
+import AdEditDialog from "@/app/components/AdEditDialog";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -54,11 +55,15 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">
-          {ad.campaignName || ad.adName || ad.adId}
-        </h1>
-        <p className="text-muted-foreground">Ad detail</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            {ad.campaignName || ad.adName || ad.adId}
+          </h1>
+          <p className="text-muted-foreground">Ad detail</p>
+        </div>
+        {/* Inline CRUD edit dialog */}
+        <AdEditDialog ad={ad as unknown as any} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -78,6 +83,10 @@ export default async function SiteAdDetailPage({ params }: { params: Params }) {
           <div className="mb-1 text-sm text-muted-foreground">Form</div>
           <div className="font-medium">{ad.formName || ad.formId}</div>
         </div>
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-xl font-semibold">Leads</h2>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">

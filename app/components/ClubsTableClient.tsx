@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast as sonnerToast } from "sonner";
 
 export type ClubRow = {
@@ -140,7 +141,7 @@ export default function ClubsTableClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Clubs</h2>
         <button type="button" className="btn btn-primary" onClick={openCreate}>
@@ -172,6 +173,9 @@ export default function ClubsTableClient({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
+                    <Link href={`/clubs/${c.id}`} className="btn btn-secondary">
+                      View
+                    </Link>
                     <button
                       type="button"
                       className="btn btn-secondary"

@@ -4,6 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+
+const LeadEditDialog = dynamic(
+  () => import("@/app/components/LeadEditDialog"),
+  { ssr: false }
+);
 
 export type LeadRow = {
   id: string;
@@ -164,14 +170,17 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => deleteIds([r.id])}
-                    className="inline-flex items-center justify-center rounded-md border border-red-600 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <LeadEditDialog lead={r} />
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => deleteIds([r.id])}
+                      className="inline-flex items-center justify-center rounded-md border border-red-600 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
