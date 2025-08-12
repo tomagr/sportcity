@@ -44,6 +44,7 @@ export default async function LeadsPage({
     .select({
       id: leads.id,
       adId: leads.adId,
+      clubId: leads.clubId,
       firstName: leads.firstName,
       lastName: leads.lastName,
       email: leads.email,
@@ -115,6 +116,7 @@ export default async function LeadsPage({
               <th className="px-3 py-2 text-left">Club</th>
               <th className="px-3 py-2 text-left">Created Time</th>
               <th className="px-3 py-2 text-left">Campaign</th>
+              <th className="px-3 py-2 text-right w-24">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -127,7 +129,14 @@ export default async function LeadsPage({
                 <td className="px-3 py-2">{r.phoneNumber}</td>
                 <td className="px-3 py-2">{r.age}</td>
                 <td className="px-3 py-2">
-                  {r.clubOfInterest ? (
+                  {r.clubId ? (
+                    <Link
+                      href={`/admin/clubs/${r.clubId}`}
+                      className="badge badge-primary"
+                    >
+                      {r.clubOfInterest}
+                    </Link>
+                  ) : r.clubOfInterest ? (
                     <span className="badge badge-primary">
                       {r.clubOfInterest}
                     </span>
@@ -152,13 +161,18 @@ export default async function LeadsPage({
                     ""
                   )}
                 </td>
+                <td className="px-3 py-2 text-right">
+                  <Link href={`/leads/${r.id}`} className="btn btn-secondary">
+                    View
+                  </Link>
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
                 <td
                   className="px-3 py-6 text-center text-muted-foreground"
-                  colSpan={7}
+                  colSpan={8}
                 >
                   No leads found.
                 </td>

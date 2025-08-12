@@ -171,6 +171,9 @@ export default function LeadsTableClient({ rows }: { rows: LeadRow[] }) {
                 </td>
                 <td className="px-3 py-2 text-right">
                   <div className="flex items-center justify-end gap-2">
+                    <Link href={`/leads/${r.id}`} className="btn btn-secondary">
+                      View
+                    </Link>
                     <LeadEditDialog lead={r} />
                     <button
                       type="button"

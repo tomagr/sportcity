@@ -39,6 +39,7 @@ export default async function AdDetailPage({ params }: { params: Params }) {
   const relatedLeads = await db
     .select({
       id: leads.id,
+      clubId: leads.clubId,
       firstName: leads.firstName,
       lastName: leads.lastName,
       email: leads.email,
@@ -99,7 +100,18 @@ export default async function AdDetailPage({ params }: { params: Params }) {
                 </td>
                 <td className="px-3 py-2">{r.email}</td>
                 <td className="px-3 py-2">{r.phoneNumber}</td>
-                <td className="px-3 py-2">{r.clubOfInterest}</td>
+                <td className="px-3 py-2">
+                  {r.clubId ? (
+                    <Link
+                      href={`/admin/clubs/${r.clubId}`}
+                      className="badge badge-primary"
+                    >
+                      {r.clubOfInterest}
+                    </Link>
+                  ) : (
+                    r.clubOfInterest
+                  )}
+                </td>
                 <td className="px-3 py-2">
                   {r.createdTime
                     ? new Date(

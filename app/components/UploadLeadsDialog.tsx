@@ -186,11 +186,29 @@ export default function UploadLeadsDialog() {
       />
       <button
         type="button"
-        className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
+        aria-label="Upload CSV"
+        className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-300 ease-out hover:shadow-2xl hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 group relative hover:scale-110 active:scale-95 before:absolute before:inset-0 before:rounded-full before:bg-primary/20 before:blur-xl before:opacity-0 before:transition-opacity before:duration-300 group-hover:before:opacity-100"
         onClick={() => inputRef.current?.click()}
         disabled={isUploading}
       >
-        {isUploading ? "Importing..." : "Import CSV"}
+        {isUploading ? (
+          <div className="h-6 w-6 rounded-full border-2 border-current border-t-transparent animate-spin" />
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-7 w-7 transition-transform duration-300 ease-out group-hover:rotate-90 group-hover:scale-110"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
       {isUploading && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 w-[min(480px,90vw)] rounded-xl border border-border bg-card shadow-xl px-4 py-3">
