@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import LeadsClubFilter from "@/app/components/LeadsClubFilter";
 import { normalizeNameKey } from "@/lib/name";
 import Link from "next/link";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -145,9 +146,7 @@ export default async function LeadsPage({
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  {r.createdTime
-                    ? new Date(r.createdTime).toLocaleString()
-                    : ""}
+                  {r.createdTime ? formatDateUtcMinus6(r.createdTime) : ""}
                 </td>
                 <td className="px-3 py-2">
                   {r.campaignName ? (

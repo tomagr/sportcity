@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 import LeadEditDialog from "@/app/components/LeadEditDialog";
 import type { LeadRow } from "@/app/components/LeadsTableClient";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -81,7 +82,7 @@ export default async function SiteLeadDetailPage({
           <div className="mb-1 text-sm text-muted-foreground">Created</div>
           <div className="font-medium">
             {row.createdTime
-              ? new Date(row.createdTime as unknown as string).toLocaleString()
+              ? formatDateUtcMinus6(row.createdTime as unknown as Date)
               : "—"}
           </div>
         </div>

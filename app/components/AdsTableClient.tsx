@@ -4,6 +4,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 export type AdRow = {
   id: string;
@@ -185,9 +186,7 @@ export default function AdsTableClient({
                 <td className="px-4 py-3">{r.formName || r.formId}</td>
                 <td className="px-4 py-3">
                   {r.createdAt
-                    ? new Date(
-                        r.createdAt as unknown as string
-                      ).toLocaleString()
+                    ? formatDateUtcMinus6(r.createdAt as unknown as string)
                     : ""}
                 </td>
                 <td className="px-4 py-3 text-right">

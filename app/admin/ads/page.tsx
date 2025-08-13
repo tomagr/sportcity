@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/client";
 import { ads } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 export default async function AdminAdsPage() {
   const rows = await db
@@ -44,7 +45,9 @@ export default async function AdminAdsPage() {
                 <td className="px-3 py-2">{r.campaignName || r.campaignId}</td>
                 <td className="px-3 py-2">{r.formName || r.formId}</td>
                 <td className="px-3 py-2">
-                  {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                  {r.createdAt
+                    ? formatDateUtcMinus6(r.createdAt as unknown as string)
+                    : ""}
                 </td>
               </tr>
             ))}

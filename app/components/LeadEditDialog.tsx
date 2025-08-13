@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { LeadRow } from "@/app/components/LeadsTableClient";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 type ClubOption = { id: string; name: string };
 
@@ -168,7 +169,7 @@ export default function LeadEditDialog({ lead }: { lead: LeadRow }) {
                   <p className="text-xs text-muted-foreground">
                     Created{" "}
                     {lead.createdTime
-                      ? new Date(lead.createdTime).toLocaleString()
+                      ? formatDateUtcMinus6(lead.createdTime)
                       : "—"}
                   </p>
                 </div>

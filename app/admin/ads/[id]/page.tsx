@@ -2,6 +2,7 @@ import { db } from "@/lib/db/client";
 import { ads, leads, clubs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 type Params = Promise<{ id: string }>; // Next.js 15 route segment param
 
@@ -114,9 +115,7 @@ export default async function AdDetailPage({ params }: { params: Params }) {
                 </td>
                 <td className="px-3 py-2">
                   {r.createdTime
-                    ? new Date(
-                        r.createdTime as unknown as string
-                      ).toLocaleString()
+                    ? formatDateUtcMinus6(r.createdTime as unknown as Date)
                     : ""}
                 </td>
               </tr>

@@ -1,5 +1,6 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { buildWelcomeEmailHtml, buildCredentialsEmailHtml, buildBaseEmailHtml, escapeHtml } from "./emailTemplates";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 const region = process.env.AWS_REGION!;
 const sesClient = new SESClient({ region });
@@ -94,7 +95,7 @@ export async function sendClubLeadsEmail(params: {
       const email = l.email ?? "—";
       const phone = l.phoneNumber ?? "—";
       const age = l.age ?? "—";
-      const created = l.createdTime ? new Date(l.createdTime).toLocaleString() : "—";
+      const created = l.createdTime ? formatDateUtcMinus6(l.createdTime) : "—";
       return `<tr>
         <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(name)}</td>
         <td style="padding:8px 12px; border:1px solid #e5e5e5;">${escapeHtml(email)}</td>

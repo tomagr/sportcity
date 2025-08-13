@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import { formatDateUtcMinus6 } from "@/lib/date";
 
 const LeadEditDialog = dynamic(
   () => import("@/app/components/LeadEditDialog"),
@@ -362,9 +363,7 @@ export default function LeadsTableClient({
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  {r.createdTime
-                    ? new Date(r.createdTime).toLocaleString()
-                    : ""}
+                  {r.createdTime ? formatDateUtcMinus6(r.createdTime) : ""}
                 </td>
                 <td className="px-3 py-2">
                   {r.campaignName ? (
